@@ -144,7 +144,7 @@
             <section id="bias-explanation" class="mb-16">
                 <h2 class="text-center">Tại Sao Phương Sai Mẫu (chia cho <span class="latex">n</span>) Bị Chệch?</h2>
                 <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">
-                    Phương sai mẫu tính bằng cách chia cho `n` có xu hướng ước lượng thấp hơn phương sai thực của tổng thể. Điều này xảy ra vì tổng bình phương khoảng cách từ các điểm trong mẫu đến **trung bình mẫu (<span class="latex">x̄</span>)** luôn là giá trị nhỏ nhất có thể. Biểu đồ dưới đây cho thấy tổng bình phương khoảng cách `Σ(xᵢ - z)²` là một hàm parabol của `z`. Điểm đáy của parabol (giá trị nhỏ nhất) luôn nằm tại `z = x̄`. Bất kỳ giá trị `z` nào khác, kể cả trung bình tổng thể `μ`, cũng sẽ cho tổng bình phương lớn hơn.
+                    Phương sai mẫu tính bằng cách chia cho n có xu hướng ước lượng thấp hơn phương sai thực của tổng thể. Điều này xảy ra vì tổng bình phương khoảng cách từ các điểm trong mẫu đến **trung bình mẫu (<span class="latex">x̄</span>)** luôn là giá trị nhỏ nhất có thể. Biểu đồ dưới đây cho thấy tổng bình phương khoảng cách Σ(xᵢ - z)² là một hàm parabol của z. Điểm đáy của parabol (giá trị nhỏ nhất) luôn nằm tại z = x̄. Bất kỳ giá trị z nào khác, kể cả trung bình tổng thể μ, cũng sẽ cho tổng bình phương lớn hơn.
                 </p>
                  <div class="chart-container">
                     <canvas id="varianceParabolaChart"></canvas>
@@ -159,7 +159,7 @@
                     Để khắc phục sự chệch (bias), chúng ta sử dụng khái niệm "Bậc tự do". Bậc tự do là số lượng giá trị trong một phép tính có thể tự do biến đổi.
                 </p>
                 <p class="text-gray-600 max-w-3xl mx-auto mb-6">
-                    Khi tính toán trung bình mẫu `x̄` từ `n` điểm dữ liệu, chúng ta đã áp đặt một ràng buộc lên dữ liệu. Nếu chúng ta biết trung bình và `n-1` giá trị, giá trị cuối cùng sẽ không còn "tự do" nữa, nó bị cố định. Do đó, chúng ta nói rằng chúng ta đã "mất" một bậc tự do.
+                    Khi tính toán trung bình mẫu x̄ từ n điểm dữ liệu, chúng ta đã áp đặt một ràng buộc lên dữ liệu. Nếu chúng ta biết trung bình và n-1 giá trị, giá trị cuối cùng sẽ không còn "tự do" nữa, nó bị cố định. Do đó, chúng ta nói rằng chúng ta đã "mất" một bậc tự do.
                 </p>
                 <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-lg border">
                     <h4 class="font-bold text-center mb-4">Thử tương tác!</h4>
@@ -172,7 +172,7 @@
                      <p class="text-center font-bold">Giá trị thứ 3 phải là: <span id="dofResult" class="text-2xl text-red-600">12</span></p>
                 </div>
                 <p class="text-gray-600 max-w-3xl mx-auto mt-6">
-                    Vì chỉ có `n-1` thông tin độc lập về sự biến thiên của mẫu, chúng ta chia tổng bình phương khoảng cách cho `n-1` để có được một ước lượng không chệch cho phương sai tổng thể. Việc chia cho một số nhỏ hơn (`n-1` thay vì `n`) sẽ "thổi phồng" ước lượng phương sai lên một chút, bù đắp cho xu hướng ước lượng thấp một cách có hệ thống.
+                    Vì chỉ có n-1 thông tin độc lập về sự biến thiên của mẫu, chúng ta chia tổng bình phương khoảng cách cho n-1 để có được một ước lượng không chệch cho phương sai tổng thể. Việc chia cho một số nhỏ hơn (n-1 thay vì n) sẽ "thổi phồng" ước lượng phương sai lên một chút, bù đắp cho xu hướng ước lượng thấp một cách có hệ thống.
                 </p>
             </section>
 
@@ -181,7 +181,7 @@
                 <h2 class="text-center">Kết Luận</h2>
                 <div class="max-w-3xl mx-auto text-left space-y-4 text-gray-700">
                     <p>
-                        <span class="font-bold">1. Trung bình mẫu (<span class="latex">x̄</span>)</span> là một ước lượng không chệch cho trung bình tổng thể (<span class="latex">μ</span>). Khi kích thước mẫu `n` tăng lên, `x̄` có xu hướng tiến gần hơn đến `μ`.
+                        <span class="font-bold">1. Trung bình mẫu (<span class="latex">x̄</span>)</span> là một ước lượng không chệch cho trung bình tổng thể (<span class="latex">μ</span>). Khi kích thước mẫu n tăng lên, x̄ có xu hướng tiến gần hơn đến μ.
                     </p>
                     <p>
                         <span class="font-bold">2. Phương sai mẫu tính bằng cách chia cho <span class="latex">n</span></span> là một ước lượng chệch. Nó có hệ thống <span class="font-bold">ước lượng thấp hơn</span> phương sai tổng thể thực sự (<span class="latex">σ²</span>).
