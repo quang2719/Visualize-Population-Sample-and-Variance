@@ -1,95 +1,91 @@
 # Visualize Population, Sample and Variance
 
-## 📊 Giới thiệu
+## I. Introduction
 
-Trang web này được tạo ra nhằm minh họa và giải thích một trong những vấn đề cốt lõi trong thống kê: **tại sao trong công thức tính phương sai mẫu, chúng ta lại chia cho (n-1) thay vì n?**
+This website is created to illustrate and explain one of the core problems in statistics: **why do we divide by (n-1) instead of n when calculating sample variance?**
 
-## 🎯 Mục đích
+This project provides a visual and interactive experience to understand:
 
-Dự án này cung cấp một trải nghiệm trực quan và tương tác để hiểu:
+- The difference between **population** and **sample**
+- The concept of **unbiased estimation** in statistics
+- The mathematical reasoning behind using **degrees of freedom (n-1)** in the sample variance formula
+- The impact of using sample mean instead of population mean
 
-- Sự khác biệt giữa **tổng thể (population)** và **mẫu (sample)**
-- Khái niệm **ước lượng không chệch** trong thống kê
-- Lý do toán học đằng sau việc sử dụng **bậc tự do (n-1)** trong công thức phương sai mẫu
-- Tác động của việc sử dụng trung bình mẫu thay vì trung bình tổng thể
+## II. Statistical Background
 
-## 🔬 Bối cảnh thống kê
+### Basic Problem
 
-### Vấn đề cơ bản
+In applied statistics, we often encounter situations where:
+- **Population**: The entire set of objects under study (e.g., 200,000 mice in a laboratory)
+- **Sample**: A subset selected from the population (e.g., 5 randomly selected mice)
 
-Trong thống kê ứng dụng, chúng ta thường gặp tình huống:
-- **Tổng thể**: Toàn bộ đối tượng nghiên cứu (ví dụ: 200,000 con chuột trong phòng thí nghiệm)
-- **Mẫu**: Một tập con được chọn từ tổng thể (ví dụ: 5 con chuột được chọn ngẫu nhiên)
+### Challenge in Estimation
 
-### Thách thức trong ước lượng
-
-Khi tính phương sai từ mẫu để ước lượng phương sai tổng thể, việc sử dụng công thức đơn giản:
+When calculating variance from a sample to estimate population variance, using the simple formula:
 
 ```
-Phương sai = (1/n) × Σ(xi - x̄)²
+Variance = (1/n) × Σ(xi - x̄)²
 ```
 
-sẽ tạo ra **ước lượng chệch** - có xu hướng ước lượng thấp hơn giá trị thực.
+creates a **biased estimate** - tends to systematically underestimate the true value.
 
-### Giải pháp: Hiệu chỉnh Bessel
+### Solution: Bessel's Correction
 
-Công thức đúng để có ước lượng không chệch:
+The correct formula for unbiased estimation:
 
 ```
 s² = (1/(n-1)) × Σ(xi - x̄)²
 ```
 
-Việc chia cho (n-1) thay vì n được gọi là **hiệu chỉnh Bessel**.
+Dividing by (n-1) instead of n is called **Bessel's correction**.
 
-## 🧮 Nguyên lý toán học
+## III. Mathematical Principles
 
-### Bậc tự do (Degrees of Freedom)
+### Degrees of Freedom
 
-- Trong mẫu n quan sát, ban đầu có n giá trị độc lập
-- Khi tính trung bình mẫu x̄, ta tạo ra một ràng buộc
-- Chỉ còn lại (n-1) thông tin độc lập về sự biến thiên
-- Do đó, phải chia cho (n-1) để có ước lượng chính xác
+- In a sample of n observations, initially there are n independent values
+- When calculating sample mean x̄, we create one constraint
+- Only (n-1) independent information about variation remains
+- Therefore, we must divide by (n-1) to get an accurate estimate
 
-### Tính chất tối ưu của trung bình mẫu
+### Optimal Property of Sample Mean
 
-Trung bình mẫu x̄ có tính chất đặc biệt:
-- Là giá trị tối thiểu hóa tổng bình phương độ lệch: `Σ(xi - z)²`
-- Do đó: `Σ(xi - x̄)² ≤ Σ(xi - μ)²`
-- Điều này dẫn đến xu hướng ước lượng thấp nếu không hiệu chỉnh
+The sample mean x̄ has a special property:
+- It minimizes the sum of squared deviations: `Σ(xi - z)²`
+- Therefore: `Σ(xi - x̄)² ≤ Σ(xi - μ)²`
+- This leads to systematic underestimation without correction
 
-## 💡 Ý nghĩa của trang web
+## IV. Purpose of This Website
 
-Trang web này giúp người dùng:
+This website helps users:
 
-1. **Trực quan hóa** sự khác biệt giữa tổng thể và mẫu
-2. **Thực nghiệm** với các kích thước mẫu khác nhau
-3. **So sánh** kết quả của công thức chia cho n và n-1
-4. **Hiểu rõ** tại sao hiệu chỉnh Bessel là cần thiết
-5. **Áp dụng** kiến thức vào thực tế nghiên cứu
+1. **Visualize** the difference between population and sample
+2. **Experiment** with different sample sizes
+3. **Compare** results from formulas dividing by n and n-1
+4. **Understand** why Bessel's correction is necessary
+5. **Apply** knowledge to practical research
 
-## 🎨 Tính năng
+## V. Features
 
-- Tạo tổng thể với các tham số tùy chỉnh
-- Lấy mẫu ngẫu nhiên với kích thước khác nhau
-- Hiển thị trực quan phân phối dữ liệu
-- So sánh phương sai được tính bằng hai phương pháp
-- Mô phỏng nhiều lần lấy mẫu để thấy xu hướng
+- Generate populations with customizable parameters
+- Random sampling with different sizes
+- Visual display of data distribution
+- Compare variance calculated by two methods
+- Simulate multiple sampling to observe trends
 
-## 📚 Tài liệu tham khảo
+## VI. References
 
-Nội dung được phát triển dựa trên:
-- Bài giảng về "Phân Tích Về Trung Bình Tổng Thể, Trung Bình Mẫu và Vấn Đề Ước Lượng Phương Sai"
-- Lý thuyết thống kê suy luận cơ bản
-- Khái niệm bậc tự do và ước lượng không chệch
+Content developed based on:
+- "Analysis of Population Mean, Sample Mean and Sample Variance Estimation Problems" by AIVietnam
+- Basic inferential statistics theory and concepts of degrees of freedom and unbiased estimation
 
-## 🚀 Cách sử dụng
+## VII. Usage
 
-1. Mở file `index.html` trong trình duyệt
-2. Điều chỉnh các tham số tổng thể
-3. Thực hiện lấy mẫu
-4. Quan sát sự khác biệt giữa hai phương pháp tính phương sai
-5. Thử nghiệm với nhiều kích thước mẫu khác nhau
+**Live Demo**: [https://quang2719.github.io/Visualize-Population-Sample-and-Variance/]
 
----
+1. Open the website using the link above
+2. Adjust population parameters
+3. Perform sampling
+4. Observe the difference between two variance calculation methods
+5. Experiment with different sample sizes
 
-*Dự án này nhằm làm rõ một trong những khái niệm quan trọng nhất trong thống kê ứng dụng, giúp người học hiểu sâu sắc hơn về bản chất của ước lượng thống kê.*
