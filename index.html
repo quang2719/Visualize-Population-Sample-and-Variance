@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình mô phỏng Thống kê: Tổng thể, Mẫu và Phương sai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: Ứng dụng được cấu trúc như một mô-đun học tập tương tác, dẫn dắt người dùng qua từng khái niệm. Bắt đầu bằng việc giới thiệu tổng thể và cho phép người dùng lấy mẫu. Sau đó, trực quan hóa sự chệch (bias) của phương sai mẫu khi chia cho 'n' thông qua biểu đồ parabol. Cuối cùng, giải thích về bậc tự do và kết luận. Cấu trúc này giúp xây dựng kiến thức một cách tuần tự, từ trực quan đến lý thuyết, làm cho khái niệm phức tạp trở nên dễ tiếp cận. Người dùng có thể tương tác (thay đổi kích thước mẫu, lấy mẫu mới) để tự mình kiểm chứng các định luật thống kê. -->
+    <!-- Visualization & Content Choices: 
+        1. Population Distribution: Histogram (Chart.js) - Goal: Hiển thị phân phối của tổng thể. Interaction: Tĩnh, làm nền cho việc lấy mẫu. Justification: Trực quan hóa hình dạng của dữ liệu.
+        2. Sample Data: Highlight on Histogram & Key Metrics Cards (HTML/JS) - Goal: So sánh mẫu với tổng thể. Interaction: Cập nhật khi lấy mẫu mới. Justification: Cho thấy mẫu là một tập con và so sánh trực tiếp các giá trị (μ vs x̄, σ² vs s²).
+        3. Variance Bias: Parabola Chart (Chart.js) - Goal: Chứng minh tại sao Σ(x-x̄)² < Σ(x-μ)². Interaction: Tự động cập nhật với mỗi mẫu mới. Justification: Đây là cách trực quan nhất để giải thích nguồn gốc của sự chệch (bias), như trong tài liệu nguồn.
+        4. Degrees of Freedom: Interactive Text (HTML/JS) - Goal: Giải thích khái niệm bậc tự do. Interaction: Người dùng nhập số để xem ràng buộc. Justification: Biến một khái niệm trừu tượng thành một ví dụ cụ thể.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #fdfaf6;
+            color: #3a3a3a;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+        .param-card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            transition: all 0.3s ease;
+        }
+        .param-card h3 {
+            font-weight: 500;
+            color: #7c7c7c;
+            font-size: 0.9rem;
+        }
+        .param-card p {
+            font-weight: 700;
+            font-size: 1.75rem;
+            color: #3a3a3a;
+        }
+        .param-card.population h3 { color: #005f73; }
+        .param-card.population p { color: #0a9396; }
+        .param-card.sample h3 { color: #ae2012; }
+        .param-card.sample p { color: #bb3e03; }
+        .btn-primary {
+            background-color: #005f73;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #0a9396;
+        }
+        .latex {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+        }
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #001219;
+        }
+        p, li {
+            line-height: 1.7;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-001219 mb-4">Trình Mô Phỏng Thống Kê Tương Tác</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Khám phá mối quan hệ giữa Tổng thể và Mẫu, và giải mã bí ẩn đằng sau công thức phương sai mẫu `s²`.</p>
+        </header>
+
+        <main>
+            <!-- SECTION 1: THE SIMULATION -->
+            <section id="simulation" class="mb-16 bg-white p-6 md:p-8 rounded-2xl shadow-sm border">
+                <h2 class="text-center">Mô Phỏng: Từ Tổng Thể đến Mẫu</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">
+                    Bên dưới là phân phối của một tổng thể giả định gồm 200,000 con chuột. Chúng ta biết được các tham số thực của tổng thể này. Hãy sử dụng thanh trượt để chọn kích thước mẫu, sau đó nhấn "Lấy Mẫu Ngẫu Nhiên" để xem các thống kê mẫu ước lượng các tham số này như thế nào.
+                </p>
+
+                <div class="chart-container mb-8">
+                    <canvas id="populationChart"></canvas>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="param-card population">
+                        <h3>Trung bình Tổng thể (<span class="latex">μ</span>)</h3>
+                        <p id="populationMean">--</p>
+                    </div>
+                    <div class="param-card population">
+                        <h3>Phương sai Tổng thể (<span class="latex">σ²</span>)</h3>
+                        <p id="populationVariance">--</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-6 rounded-lg border mb-8">
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                        <div>
+                            <label for="sampleSize" class="block text-center font-medium mb-2">Kích thước mẫu (<span class="latex">n</span>): <span id="sampleSizeValue" class="font-bold text-blue-700">50</span></label>
+                            <input type="range" id="sampleSize" min="50" max="10000" value="50" class="w-64">
+                        </div>
+                        <button id="drawSampleBtn" class="btn-primary">Lấy Mẫu Ngẫu Nhiên</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="param-card sample">
+                        <h3>Trung bình Mẫu (<span class="latex">x̄</span>)</h3>
+                        <p id="sampleMean">--</p>
+                    </div>
+                    <div class="param-card sample">
+                        <h3>Phương sai Mẫu (chia cho <span class="latex">n</span>)</h3>
+                        <p id="biasedVariance">--</p>
+                    </div>
+                    <div class="param-card sample">
+                        <h3>Phương sai Mẫu (chia cho <span class="latex">n-1</span>)</h3>
+                        <p id="unbiasedVariance">--</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: THE BIAS EXPLAINED -->
+            <section id="bias-explanation" class="mb-16">
+                <h2 class="text-center">Tại Sao Phương Sai Mẫu (chia cho <span class="latex">n</span>) Bị Chệch?</h2>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">
+                    Phương sai mẫu tính bằng cách chia cho `n` có xu hướng ước lượng thấp hơn phương sai thực của tổng thể. Điều này xảy ra vì tổng bình phương khoảng cách từ các điểm trong mẫu đến **trung bình mẫu (<span class="latex">x̄</span>)** luôn là giá trị nhỏ nhất có thể. Biểu đồ dưới đây cho thấy tổng bình phương khoảng cách `Σ(xᵢ - z)²` là một hàm parabol của `z`. Điểm đáy của parabol (giá trị nhỏ nhất) luôn nằm tại `z = x̄`. Bất kỳ giá trị `z` nào khác, kể cả trung bình tổng thể `μ`, cũng sẽ cho tổng bình phương lớn hơn.
+                </p>
+                 <div class="chart-container">
+                    <canvas id="varianceParabolaChart"></canvas>
+                </div>
+                <div id="parabola-text" class="text-center mt-4 text-gray-600"></div>
+            </section>
+
+            <!-- SECTION 3: DEGREES OF FREEDOM -->
+            <section id="dof" class="mb-16 bg-white p-6 md:p-8 rounded-2xl shadow-sm border">
+                <h2 class="text-center">Bậc Tự Do (Degrees of Freedom)</h2>
+                <p class="text-gray-600 max-w-3xl mx-auto mb-4">
+                    Để khắc phục sự chệch (bias), chúng ta sử dụng khái niệm "Bậc tự do". Bậc tự do là số lượng giá trị trong một phép tính có thể tự do biến đổi.
+                </p>
+                <p class="text-gray-600 max-w-3xl mx-auto mb-6">
+                    Khi tính toán trung bình mẫu `x̄` từ `n` điểm dữ liệu, chúng ta đã áp đặt một ràng buộc lên dữ liệu. Nếu chúng ta biết trung bình và `n-1` giá trị, giá trị cuối cùng sẽ không còn "tự do" nữa, nó bị cố định. Do đó, chúng ta nói rằng chúng ta đã "mất" một bậc tự do.
+                </p>
+                <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-lg border">
+                    <h4 class="font-bold text-center mb-4">Thử tương tác!</h4>
+                    <p class="text-sm text-center mb-4">Giả sử một mẫu có 3 giá trị và trung bình mẫu là 10. Hãy nhập 2 giá trị đầu tiên.</p>
+                    <div class="flex justify-center items-center gap-4 mb-4">
+                        <input type="number" id="dofVal1" class="w-20 p-2 border rounded" placeholder="Số 1" value="7">
+                        <input type="number" id="dofVal2" class="w-20 p-2 border rounded" placeholder="Số 2" value="11">
+                        <span class="text-2xl font-bold text-gray-400" id="dofVal3">?</span>
+                    </div>
+                     <p class="text-center font-bold">Giá trị thứ 3 phải là: <span id="dofResult" class="text-2xl text-red-600">12</span></p>
+                </div>
+                <p class="text-gray-600 max-w-3xl mx-auto mt-6">
+                    Vì chỉ có `n-1` thông tin độc lập về sự biến thiên của mẫu, chúng ta chia tổng bình phương khoảng cách cho `n-1` để có được một ước lượng không chệch cho phương sai tổng thể. Việc chia cho một số nhỏ hơn (`n-1` thay vì `n`) sẽ "thổi phồng" ước lượng phương sai lên một chút, bù đắp cho xu hướng ước lượng thấp một cách có hệ thống.
+                </p>
+            </section>
+
+            <!-- SECTION 4: CONCLUSION -->
+            <footer class="text-center py-8">
+                <h2 class="text-center">Kết Luận</h2>
+                <div class="max-w-3xl mx-auto text-left space-y-4 text-gray-700">
+                    <p>
+                        <span class="font-bold">1. Trung bình mẫu (<span class="latex">x̄</span>)</span> là một ước lượng không chệch cho trung bình tổng thể (<span class="latex">μ</span>). Khi kích thước mẫu `n` tăng lên, `x̄` có xu hướng tiến gần hơn đến `μ`.
+                    </p>
+                    <p>
+                        <span class="font-bold">2. Phương sai mẫu tính bằng cách chia cho <span class="latex">n</span></span> là một ước lượng chệch. Nó có hệ thống <span class="font-bold">ước lượng thấp hơn</span> phương sai tổng thể thực sự (<span class="latex">σ²</span>).
+                    </p>
+                    <p>
+                        <span class="font-bold">3. Phương sai mẫu tính bằng cách chia cho <span class="latex">n-1</span></span> (ký hiệu <span class="latex">s²</span>) là một ước lượng không chệch cho phương sai tổng thể. Việc điều chỉnh này là cần thiết để bù đắp cho việc mất một bậc tự do khi ước lượng trung bình.
+                    </p>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DATA SIMULATION ---
+            const POPULATION_SIZE = 200000;
+            const population = [];
+            const POP_MEAN = 20;
+            const POP_STD_DEV = 5;
+
+            // Generate a normally distributed population
+            for (let i = 0; i < POPULATION_SIZE; i++) {
+                let u = 0, v = 0;
+                while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+                while(v === 0) v = Math.random();
+                let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+                num = num * POP_STD_DEV + POP_MEAN;
+                population.push(num);
+            }
+
+            const truePopulationMean = population.reduce((a, b) => a + b, 0) / POPULATION_SIZE;
+            const truePopulationVariance = population.reduce((acc, val) => acc + Math.pow(val - truePopulationMean, 2), 0) / POPULATION_SIZE;
+
+            document.getElementById('populationMean').textContent = truePopulationMean.toFixed(2);
+            document.getElementById('populationVariance').textContent = truePopulationVariance.toFixed(2);
+
+            // --- UI ELEMENTS ---
+            const sampleSizeSlider = document.getElementById('sampleSize');
+            const sampleSizeValue = document.getElementById('sampleSizeValue');
+            const drawSampleBtn = document.getElementById('drawSampleBtn');
+            const sampleMeanEl = document.getElementById('sampleMean');
+            const biasedVarianceEl = document.getElementById('biasedVariance');
+            const unbiasedVarianceEl = document.getElementById('unbiasedVariance');
+            const parabolaTextEl = document.getElementById('parabola-text');
+
+            // --- CHART.JS SETUP ---
+            let populationChart, parabolaChart;
+
+            function createPopulationChart() {
+                const ctx = document.getElementById('populationChart').getContext('2d');
+                
+                // Bin the data for histogram
+                const bins = {};
+                const binWidth = 1;
+                population.forEach(val => {
+                    const bin = Math.floor(val / binWidth) * binWidth;
+                    bins[bin] = (bins[bin] || 0) + 1;
+                });
+                
+                const labels = Object.keys(bins).sort((a, b) => a - b);
+                const data = labels.map(label => bins[label]);
+
+                populationChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Phân phối Tổng thể',
+                            data: data,
+                            backgroundColor: 'rgba(10, 147, 150, 0.6)',
+                            borderColor: 'rgba(10, 147, 150, 1)',
+                            borderWidth: 1,
+                            barPercentage: 1.0,
+                            categoryPercentage: 1.0
+                        },
+                        {
+                            label: 'Dữ liệu Mẫu',
+                            data: [],
+                            backgroundColor: 'rgba(187, 62, 3, 0.8)',
+                            borderColor: 'rgba(187, 62, 3, 1)',
+                            borderWidth: 1,
+                            barPercentage: 1.0,
+                            categoryPercentage: 1.0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Cân nặng (g)' }
+                            },
+                            y: {
+                                title: { display: true, text: 'Số lượng' }
+                            }
+                        },
+                        plugins: {
+                            tooltip: { enabled: false },
+                            legend: { position: 'top' }
+                        }
+                    }
+                });
+            }
+
+            function createParabolaChart() {
+                const ctx = document.getElementById('varianceParabolaChart').getContext('2d');
+                parabolaChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Tổng bình phương khoảng cách Σ(xᵢ - z)²',
+                            data: [],
+                            borderColor: '#005f73',
+                            tension: 0.1,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Giá trị z' }
+                            },
+                            y: {
+                                title: { display: true, text: 'Tổng bình phương khoảng cách' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            annotation: {
+                                annotations: {}
+                            }
+                        }
+                    }
+                });
+            }
+
+            // --- CORE LOGIC ---
+            function updateSimulation() {
+                const n = parseInt(sampleSizeSlider.value);
+                
+                // 1. Draw a random sample
+                const sample = [];
+                for (let i = 0; i < n; i++) {
+                    const randomIndex = Math.floor(Math.random() * POPULATION_SIZE);
+                    sample.push(population[randomIndex]);
+                }
+
+                // 2. Calculate sample statistics
+                const sampleMean = sample.reduce((a, b) => a + b, 0) / n;
+                const sumOfSquaredDiffs = sample.reduce((acc, val) => acc + Math.pow(val - sampleMean, 2), 0);
+                const biasedVariance = sumOfSquaredDiffs / n;
+                const unbiasedVariance = sumOfSquaredDiffs / (n - 1);
+
+                // 3. Update UI
+                sampleMeanEl.textContent = sampleMean.toFixed(2);
+                biasedVarianceEl.textContent = biasedVariance.toFixed(2);
+                unbiasedVarianceEl.textContent = unbiasedVariance.toFixed(2);
+
+                // 4. Update Population Chart with sample data
+                const sampleBins = {};
+                const binWidth = 1;
+                sample.forEach(val => {
+                    const bin = Math.floor(val / binWidth) * binWidth;
+                    sampleBins[bin] = (sampleBins[bin] || 0) + 1;
+                });
+                
+                const sampleDataPoints = populationChart.data.labels.map(label => sampleBins[label] || 0);
+                populationChart.data.datasets[1].data = sampleDataPoints;
+                populationChart.update('none');
+
+                // 5. Update Parabola Chart
+                updateParabola(sample, sampleMean, truePopulationMean);
+            }
+
+            function updateParabola(sample, sampleMean, popMean) {
+                const dataPoints = [];
+                const labels = [];
+                const start = Math.min(sampleMean, popMean) - 3;
+                const end = Math.max(sampleMean, popMean) + 3;
+
+                for (let z = start; z <= end; z += 0.1) {
+                    const ssd = sample.reduce((acc, val) => acc + Math.pow(val - z, 2), 0);
+                    dataPoints.push(ssd);
+                    labels.push(z.toFixed(1));
+                }
+
+                parabolaChart.data.labels = labels;
+                parabolaChart.data.datasets[0].data = dataPoints;
+                
+                const sumOfSquaredDiffsAtSampleMean = sample.reduce((acc, val) => acc + Math.pow(val - sampleMean, 2), 0);
+                const sumOfSquaredDiffsAtPopMean = sample.reduce((acc, val) => acc + Math.pow(val - popMean, 2), 0);
+
+                parabolaTextEl.innerHTML = `
+                    Tại <span class="latex">z = x̄</span> (${sampleMean.toFixed(2)}), tổng bình phương là <span class="font-bold text-blue-700">${sumOfSquaredDiffsAtSampleMean.toFixed(2)}</span> (Nhỏ nhất).<br>
+                    Tại <span class="latex">z = μ</span> (${popMean.toFixed(2)}), tổng bình phương là <span class="font-bold text-red-700">${sumOfSquaredDiffsAtPopMean.toFixed(2)}</span>.
+                `;
+
+                parabolaChart.update('none');
+            }
+            
+            // --- DEGREES OF FREEDOM INTERACTION ---
+            const dofVal1 = document.getElementById('dofVal1');
+            const dofVal2 = document.getElementById('dofVal2');
+            const dofVal3 = document.getElementById('dofVal3');
+            const dofResult = document.getElementById('dofResult');
+
+            function updateDof() {
+                const v1 = parseFloat(dofVal1.value) || 0;
+                const v2 = parseFloat(dofVal2.value) || 0;
+                const mean = 10;
+                const n = 3;
+                const requiredSum = mean * n;
+                const v3 = requiredSum - v1 - v2;
+                dofResult.textContent = v3.toFixed(2);
+            }
+
+            dofVal1.addEventListener('input', updateDof);
+            dofVal2.addEventListener('input', updateDof);
+
+
+            // --- EVENT LISTENERS ---
+            sampleSizeSlider.addEventListener('input', (e) => {
+                sampleSizeValue.textContent = e.target.value;
+            });
+
+            drawSampleBtn.addEventListener('click', updateSimulation);
+
+            // --- INITIALIZATION ---
+            createPopulationChart();
+            createParabolaChart();
+            updateSimulation();
+            updateDof();
+        });
+    </script>
+</body>
+</html>
